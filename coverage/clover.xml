@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1762181928311" clover="3.2.0">
+  <project timestamp="1762181928311" name="All files">
+    <metrics statements="8" coveredstatements="8" conditionals="8" coveredconditionals="8" methods="4" coveredmethods="4" elements="20" coveredelements="20" complexity="0" loc="8" ncloc="8" packages="1" files="1" classes="1"/>
+    <file name="functionsToTest.ts" path="/Volumes/Magnus/code/skola/sundsgarden/module3/1.jest/functionsToTest.ts">
+      <metrics statements="8" coveredstatements="8" conditionals="8" coveredconditionals="8" methods="4" coveredmethods="4"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="6" count="99" type="cond" truecount="6" falsecount="0"/>
+      <line num="9" count="1" type="stmt"/>
+      <line num="10" count="3" type="stmt"/>
+      <line num="11" count="3" type="stmt"/>
+      <line num="12" count="12" type="cond" truecount="2" falsecount="0"/>
+    </file>
+  </project>
+</coverage>

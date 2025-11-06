@@ -1,0 +1,29 @@
+{
+    "name": "1.jest",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "nodemon server.ts",
+        "test": "jest"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module",
+    "dependencies": {
+        "express": "^5.1.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.28.5",
+        "@babel/preset-env": "^7.28.5",
+        "@babel/preset-typescript": "^7.28.5",
+        "@types/express": "^5.0.5",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.2.0",
+        "nodemon": "^3.1.10",
+        "ts-jest": "^29.4.5"
+    }
+}
