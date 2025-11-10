@@ -1,10 +1,10 @@
 // TODO: Implement these core functions
-let books = [
+export let books = [
     { id: 1, title: "The Pragmatic Programmer", author: "Andrew Hunt & David Thomas", price: 29.99, stock: 10 },
     { id: 2, title: "Clean Code", author: "Robert C. Martin", price: 24.5, stock: 5 },
     { id: 3, title: "You Don't Know JS", author: "Kyle Simpson", price: 19.99, stock: 8 },
     { id: 4, title: "Introduction to Algorithms", author: "Cormen, Leiserson, Rivest & Stein", price: 89.0, stock: 3 },
-    { id: 5, title: "Eloquent JavaScript", author: "Marijn Haverbeke", price: 17.5, stock: 12 },
+    { id: 5, title: "Eloquent JavaScript", author: "Marijn Haverbeke", price: 17.5, stock: 100 },
 ];
 
 interface Query {
@@ -28,12 +28,15 @@ interface CartItem {
     author: string;
     price: number;
     amount: number;
+    stock: number;
 }
 interface Cart {
     items: CartItem[];
     total: number;
 }
-
+export const roundToTwoDecimals = (number: number) => {
+    return Math.round(number * 100) / 100;
+};
 const calculateTotal = (cart: Cart) => {
     // Calculates total price of all items in cart
     // Apply 10% tax
@@ -42,17 +45,24 @@ const calculateTotal = (cart: Cart) => {
 
     cart.items.forEach((item) => (cartPrice += item.amount * item.price * taxMultiplier));
 
-    return Math.round(cartPrice * 100) / 100;
+    return roundToTwoDecimals(cartPrice);
 };
-
-const addToCart = (bookId: number, quantity: number) => {
+interface BooksToBuy {
+    bookId: number;
+    quantity: number;
+}
+const addToCart = (booksToBuy: BooksToBuy[]) => {
     // Adds book to shopping cart
     // Returns updated cart object
+
     const cart: Cart = { items: [], total: 0 };
-    const bookToBuy = books.find((book) => book.id === bookId);
-    if (!bookToBuy) return cart;
-    const orderItem = { ...bookToBuy, amount: quantity };
-    cart.items.push(orderItem);
+    booksToBuy.forEach((bookToBuy) => {
+        const book = books.find((book) => book.id === bookToBuy.bookId);
+        if (!book) return cart;
+        const orderItem = { ...book, amount: bookToBuy.quantity };
+        cart.items.push(orderItem);
+    });
+
     const price = calculateTotal(cart);
     return { ...cart, total: price };
 };
@@ -60,23 +70,31 @@ const addToCart = (bookId: number, quantity: number) => {
 
 const processPayment = (cartTotal: number, paymentMethod: "cash" | "grass" | "ass" = "cash") => {
     // Processes payment (simulate with random success/failure)
+    //! NOT DOING RANDOM. CAUSE HOW DO YOU TEST FOR IT?
     // Returns { success: boolean, transactionId: string }
-    const wallet = Math.floor(Math.random() * 200);
-    if (wallet < cartTotal) return { success: false, transactionId: "" };
-    return { success: true, transactionId: `${wallet}${Math.round(cartTotal)}${paymentMethod}`.toString() };
+    const wallet = 1200;
+    if (wallet < cartTotal) throw new Error("You are poor and can't afford it.");
+    return {
+        success: true,
+        transactionId: `${wallet}${Math.floor(Math.random() * Math.round(cartTotal))}${paymentMethod}`.toString(),
+    };
 };
 // console.log("processPayment", processPayment(98.97));
 
 const updateInventory = (cart: Cart) => {
     // Reduces stock for all books in cart
     // Throws error if any book is out of stock
-    const isAllBooksInStock = cart.items.every((item) => books.every((book) => item.amount < book.stock));
+    const isAllBooksInStock = cart.items.every((item) => {
+        const book = books.find((book) => book.id === item.id);
+        return book !== undefined && item.amount <= book.stock;
+    });
     if (!isAllBooksInStock) throw new Error("Can't complete purchase due to item out of stock.");
     for (let i = 0; i < cart.items.length; i++) {
         const cartItem = cart.items[i];
         const bookToUpdate = books.find((book) => cartItem.id === book.id);
         if (bookToUpdate) {
             bookToUpdate.stock -= cartItem.amount;
+            cartItem.stock -= cartItem.amount;
         }
     }
 };
@@ -84,8 +102,7 @@ const updateInventory = (cart: Cart) => {
 // MAIN INTEGRATION FUNCTION
 
 const completePurchase = (
-    bookId: number,
-    quantity: number,
+    booksToBuy: BooksToBuy[],
     paymentMethod: "cash" | "grass" | "ass" = "cash",
     searchQuery?: Query
 ) => {
@@ -94,18 +111,28 @@ const completePurchase = (
         // 1. Search for books
         if (searchQuery) searchBooks(searchQuery); //! WHY THOUGH?
         // 2. Add to cart  // 3. Calculate total
-        const cart = addToCart(bookId, quantity);
-        console.log("cart", cart);
+        const cart = addToCart(booksToBuy);
         // 4. Process payment
-        processPayment(cart.total, paymentMethod);
+        const orderResponse = processPayment(cart.total, paymentMethod);
+
         // 5. Update inventory
         updateInventory(cart);
         // 6. Return order confirmation
-        return books;
+        return { ...cart, ...orderResponse };
     } catch (error) {
+        if (error instanceof Error) return { success: false, message: error.message };
         console.error(error);
     }
 };
-console.log("completePurchase", completePurchase(1, 11, "cash"));
+// console.log(
+//     "completePurchase",
+//     completePurchase(
+//         [
+//             { bookId: 1, quantity: 1 },
+//             { bookId: 2, quantity: 1 },
+//         ],
+//         "cash"
+//     )
+// );
 
 export { searchBooks, addToCart, calculateTotal, processPayment, updateInventory, completePurchase };

@@ -1,5 +1,9 @@
 {
     "code-runner.executorMap": {
         "typescript": "npx ts-node"
+    },
+    "editor.tokenColorCustomizations": {
+        "comments": "",
+        "textMateRules": []
     }
 }
