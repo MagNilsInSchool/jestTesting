@@ -5,6 +5,7 @@ export let books = [
     { id: 3, title: "You Don't Know JS", author: "Kyle Simpson", price: 19.99, stock: 8 },
     { id: 4, title: "Introduction to Algorithms", author: "Cormen, Leiserson, Rivest & Stein", price: 89.0, stock: 3 },
     { id: 5, title: "Eloquent JavaScript", author: "Marijn Haverbeke", price: 17.5, stock: 100 },
+    { id: 6, title: "Free shipping", author: "Beans", price: 10, stock: 100 },
 ];
 
 interface Query {
@@ -42,10 +43,10 @@ const calculateTotal = (cart: Cart) => {
     // Apply 10% tax
     const taxMultiplier = 1.1;
     let cartPrice = 0;
-
+    let shipping = 5;
     cart.items.forEach((item) => (cartPrice += item.amount * item.price * taxMultiplier));
-
-    return roundToTwoDecimals(cartPrice);
+    if (roundToTwoDecimals(cartPrice) >= 100) shipping = 0;
+    return { total: roundToTwoDecimals(cartPrice) + shipping, shipping };
 };
 interface BooksToBuy {
     bookId: number;
@@ -58,13 +59,14 @@ const addToCart = (booksToBuy: BooksToBuy[]) => {
     const cart: Cart = { items: [], total: 0 };
     booksToBuy.forEach((bookToBuy) => {
         const book = books.find((book) => book.id === bookToBuy.bookId);
-        if (!book) return cart;
+        if (!book) throw new Error("You are trying to buy a book that does not exist.");
         const orderItem = { ...book, amount: bookToBuy.quantity };
         cart.items.push(orderItem);
     });
 
-    const price = calculateTotal(cart);
-    return { ...cart, total: price };
+    const { total, shipping } = calculateTotal(cart);
+
+    return { ...cart, total, shipping };
 };
 // console.log("addToCart", addToCart(1, 3));
 
@@ -100,7 +102,13 @@ const updateInventory = (cart: Cart) => {
 };
 
 // MAIN INTEGRATION FUNCTION
-
+const checkForLowInventory = (cart: Cart) => {
+    const lowStockWarnings: string[] = [];
+    cart.items.forEach(
+        (item) => item.stock < 5 && lowStockWarnings.push(`Warning ${item.title} have less than 5 issues in stock.`)
+    );
+    return lowStockWarnings;
+};
 const completePurchase = (
     booksToBuy: BooksToBuy[],
     paymentMethod: "cash" | "grass" | "ass" = "cash",
@@ -117,8 +125,9 @@ const completePurchase = (
 
         // 5. Update inventory
         updateInventory(cart);
+        const lowStockWarnings = checkForLowInventory(cart);
         // 6. Return order confirmation
-        return { ...cart, ...orderResponse };
+        return { ...cart, ...orderResponse, lowStockWarnings };
     } catch (error) {
         if (error instanceof Error) return { success: false, message: error.message };
         console.error(error);
